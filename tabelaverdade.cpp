@@ -1,4 +1,10 @@
-#include <bits/stdc++.h>
+#include <cstdio>
+#include <cstdlib>
+#include <iostream>
+#include <string>
+#include <cstring>
+#include <vector>
+#include <cmath>
 
 using namespace std;
 
@@ -11,8 +17,15 @@ vi mkd;
 char str[201];//Guarda a completa
 char substr[50][201];//Guarda todas as subexpressões
 
-int atomic(char a){
-   if(a == 'x' || a == 'y' || a == 'z' || a == 't') return 1;
+int isAtomic(char a){
+   if(a == 'x')
+      return 1;
+   if(a == 'y')
+      return 2;
+   if(a == 'z')
+      return 3;
+   if(a == 't')
+      return 4;
    return 0;
 }
 
@@ -59,17 +72,59 @@ int findSub(vi mkd, int where){
 }
 
 int main(){
-   int i;
+   int i, j, k, aux, cont, atomics, icog[4]={};
    scanf(" %s", str);
+   int value[16][100];
 
    for(i = 0; i<strlen(str); i++){
+      aux = isAtomic(str[i]);
+      if(aux){
+         substr[aux-1][0] = str[i];
+         substr[aux-1][1] = '\0';
+         if(!icog[aux-1]){
+            icog[aux-1] = 1;
+            cont++;
+         }
+      }
       mkd.push_back(0);
    }
-   found = 0;
+   atomics = cont;
+   found = 4;
+
    findSub(mkd, 0);
-   for(i=0; i<found; i++){
-      printf("%s\n",substr[i]);
+   
+   for(i=0; i<4; i++){
+      if(icog[i]){
+         for(j=0; j<pow(2, atomics);){
+            for(; j<pow(2, cont-1); j++){
+               value[j][i] = 0;
+            }
+            for(; j<pow(2, cont-1); k++){
+               value[j][i] = 1;
+            }
+            j+=pow(2, cont);
+         }
+         cont--;
+      }
    }
+   // for(i=0; i<found; i++){
+   //    if(i<=3){
+   //       if(icog[i]){
+   //          printf("%s ", substr[i]);
+   //       }
+   //    }else{
+   //       printf("%s ",substr[i]);   
+   //    }
+      
+   // }
+
+   for(i=0; i<4; i++){
+      for(j=0; j<pow(2, atomics); j++){
+         printf("%d\n", value[j][i]);
+      }
+      printf("outro:\n");
+   }
+   
 
    return 0;
 }
