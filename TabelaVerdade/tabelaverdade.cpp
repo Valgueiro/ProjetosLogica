@@ -302,7 +302,6 @@ int main(){
 
         fprintf(saida, "Tabela #%d\n", cont);
         fgets(str, 201, entrada);
-        if(cont==2) printf("%d\n", (int)strlen(str));
         init();
 
         for(i=5; i<found; i++){
