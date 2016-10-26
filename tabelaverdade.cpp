@@ -35,10 +35,25 @@ int isAtomic(char a){
         return 4;
     return 0;
 }
+void printClassificacao(){
+    int j;
+    bool taut=true, insat=true;
 
-int valor(char a, int j){
-    int aux = isAtomic(a);
-    return value[j][aux];
+    for(j=0; j<pow(2, atomics); j++){
+        if(!value[j][found-1]){
+            taut = false;
+        }else{
+            insat = false;
+        }
+    }
+
+    if(insat){
+        printf("insatistativel e refutavel\n");
+    }else if(taut){
+        printf("satistativel e tautologia\n");
+    }else{
+        printf("satisfativel e refutavel\n");
+    }
 }
 
 void printLinha(){
@@ -67,7 +82,8 @@ void print(){
             espacos[i]=0;
         }else{
             printf("%s|",substr[i]);
-            espacos[i]=strlen(substr[i])-1;
+            if(isAtomic(substr[i][0])) espacos[i]=0;
+            else  espacos[i]=strlen(substr[i])-1;
         }
 
     }
@@ -95,48 +111,9 @@ void print(){
         printf("\n");
     }
     printLinha();
-}
 
-int final(char str[], int begin){
-    int end = begin;
-    while(str[end]!=')'){
-        end++;
-    }
-    return end-1;
-}
+    printClassificacao();
 
-int comeco(char str[], int end){
-    int begin = end;
-    while(str[begin]!='('){
-        begin--;
-    }
-    return begin-1;
-}
-
-int takevalue(int i, char str[], int* aux1, int* aux2, int linha){
-    int ini, fim;
-    if(isAtomic(str[i-1])){
-        *aux1 = valor(str[i-1], linha);
-    }else{
-        ini = comeco(str, i-1);
-        *aux1 = setvalue(str, linha, ini, i-1);
-        printf("sub:");
-        for(int j=ini; j<i-1;j++){
-            printf("%c", str[j]);
-        }
-        printf(" -> value:%d\n", *aux1);
-    }
-    if(isAtomic(str[i+1])){
-        *aux2 = valor(str[i-1], linha);
-    }else{
-        fim = final(str, i+1);
-        *aux2 = setvalue(str, linha, i+1, fim);
-        printf("sub:");
-        for(int j=i+1; j<fim;j++){
-            printf("%c", str[j]);
-        }
-        printf(" -> value:%d\n", *aux2);
-    }
 }
 //===========================================================================================
 
@@ -225,41 +202,52 @@ void init(){
     findSub(0);
 
     //qtd de ---
-    tam = atomics, i;
+    tam = atomics;
     for(i=5; i<found; i++){
         tam+=strlen(substr[i]);
     }
-    tam+=found-1;
+    tam+=found-4+atomics;
 }
 //===========================================================================================
 
 int setvalue(char str[], int linha, int begin, int end){
-    int i, aux, aux1, aux2, fim, ini;
+    int i, aux, aux1, aux2, fim, ini, cont = 0;
+    if(begin==end){
+        aux = isAtomic(str[end]);
+        if(aux){//or
+            return value[linha][aux];
+        }
+    }
     for(i=begin; i<end; i++){
-         if(str[i] == '+'){//or
-            printf("or:\n");
-            takevalue(i, str, &aux1, &aux2, linha);
-            return For(aux1, aux2);
-        }else if(str[i] == '.'){
-            printf("and:\n");
-            takevalue(i, str, &aux1, &aux2, linha);
-            return Fand(aux1, aux2);
-        }else if(str[i] == '>'){
-            printf("imp:\n");
-            takevalue(i, str, &aux1, &aux2, linha);
-            return Fimp(aux1, aux2);
-        }else if(str[i] == '-'){//not
-            if(isAtomic(str[i+1])){
-                printf("not:%c\n", str[i+1]);
-                printf("%d->%d\n",valor(str[i+1], linha), Fnot(valor(str[i+1], linha)));
-                return Fnot(valor(str[i+1], linha));
-            }else{
-                fim = final(str, i+1);
-                aux = setvalue(str, linha, i+1, fim);
-                return Fnot(aux);
+        if(str[i]=='('){
+            cont++;
+        }else if(str[i] == ')'){
+            cont--;
+        }else{
+            if(cont==1){
+                if(str[i] == '-'){
+                    return Fnot(setvalue(str, linha, i+1, end-1));
+                }else if(str[i] == '.'){
+                    aux1 = setvalue(str, linha, begin+1, i-1);
+                    aux2 = setvalue(str, linha, i+1, end-1);
+                    return Fand(aux1, aux2);
+                }else if(str[i] == '+'){
+                    aux1 = setvalue(str, linha, begin+1, i-1);
+                    aux2 = setvalue(str, linha, i+1, end-1);
+                    return For(aux1, aux2);
+                }else if(str[i] == '>'){
+                    aux1 = setvalue(str, linha, begin+1, i-1);
+                    aux2 = setvalue(str, linha, i+1, end-1);
+                    return Fimp(aux1, aux2);
+                }
             }
         }
     }
+    aux = isAtomic(str[begin]);
+    if(aux){//or
+        return value[linha][aux];
+    }
+
 }
 
 int main(){
@@ -275,7 +263,9 @@ int main(){
     }
 
 
+
+
     print();
 
-   return 0;
+    return 0;
 }
