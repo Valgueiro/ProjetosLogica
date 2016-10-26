@@ -1,12 +1,10 @@
-#include <cstdio>
+#include <stdio.h>
 #include <cstdlib>
 #include <iostream>
-#include <string>
+#include <string.h>
 #include <cstring>
 #include <vector>
 #include <math.h>
-#define dbg printf("aqui\n")
-#define dbg1 printf("aqui1\n")
 
 using namespace std;
 
@@ -20,10 +18,17 @@ vi mkd;
 char str[201];//Guarda a completa
 char substr[50][201];//Guarda todas as subexpressões
 
-
-int setvalue(char str[], int linha, int begin, int end);
+FILE *entrada;
+FILE *saida;
 
 //=====================================Funções úteis=========================================
+void swap(char str1[], char str2[]){
+    char aux[201];
+    strcpy(aux, str1);
+    strcpy(str1, str2);
+    strcpy(str2, aux);
+}
+
 int isAtomic(char a){
     if(a == 'x')
         return 1;
@@ -35,6 +40,7 @@ int isAtomic(char a){
         return 4;
     return 0;
 }
+
 void printClassificacao(){
     int j;
     bool taut=true, insat=true;
@@ -46,22 +52,26 @@ void printClassificacao(){
             insat = false;
         }
     }
-
-    if(insat){
-        printf("insatistativel e refutavel\n");
-    }else if(taut){
-        printf("satistativel e tautologia\n");
+    if(strlen(str)<=3){
+        fprintf(saida ,"satisfativel e refutavel\n\n");
     }else{
-        printf("satisfativel e refutavel\n");
+        if(insat){
+            fprintf(saida ,"insatistativel e refutavel\n\n");
+        }else if(taut){
+            fprintf(saida ,"satistativel e tautologia\n\n");
+        }else{
+            fprintf(saida ,"satisfativel e refutavel\n\n");
+        }
     }
+
 }
 
 void printLinha(){
     int i;
     for(i=0; i<tam; i++){
-        printf("-");
+        fprintf(saida ,"-");
     }
-    printf("\n");
+    fprintf(saida ,"\n");
 }
 
 void print(){
@@ -69,25 +79,27 @@ void print(){
     int i, j, espacos[200];
     //Primeira linha com as subexpressões:
     printLinha();
+
     for(i=1; i<found; i++){
         if(i<=4){
             if(variables[i]){
                 if(first){
-                    printf("|%s|", substr[i]);
+                    fprintf(saida ,"|%s|", substr[i]);
                     first = false;
                 }else{
-                    printf("%s|", substr[i]);
+                    fprintf(saida ,"%s|", substr[i]);
                 }
             }
             espacos[i]=0;
         }else{
-            printf("%s|",substr[i]);
+            fprintf(saida ,"%s|",substr[i]);
             if(isAtomic(substr[i][0])) espacos[i]=0;
             else  espacos[i]=strlen(substr[i])-1;
         }
 
     }
-    printf("\n");
+
+    fprintf(saida, "\n");
 
     //Valores da tabela;
     for(j=0; j<pow(2, atomics); j++){
@@ -99,16 +111,16 @@ void print(){
                   continue;
             }
             if(first){
-                 printf("|%d|", value[j][i]);
+                 fprintf(saida, "|%d|", value[j][i]);
                  first = false;
             }else{
                 for(int k=0; k<espacos[i]; k++){
-                    printf(" ");
+                    fprintf(saida, " ");
                 }
-                printf("%d|", value[j][i]);
+                fprintf(saida, "%d|", value[j][i]);
             }
         }
-        printf("\n");
+        fprintf(saida, "\n");
     }
     printLinha();
 
@@ -139,7 +151,7 @@ int Fnot(int a){
 }
 //===========================================================================================
 
-//====================================Inicialização==========================================
+//====================================inicialização==========================================
 void setvariables(){
     int aux = atomics, cont=0, j;
     for(int i=1; i<5; i++){
@@ -157,6 +169,15 @@ void setvariables(){
             }
         }
     }
+    substr[1][0] = 'x';
+    substr[1][1] = '\0';
+    substr[2][0] = 'y';
+    substr[2][1] = '\0';
+    substr[3][0] = 'z';
+    substr[3][1] = '\0';
+    substr[4][0] = 't';
+    substr[4][1] = '\0';
+
 }
 
 void pass(int begin, int end){
@@ -180,13 +201,27 @@ int findSub(int where){
 
 }
 
+void orderSubs(){
+    int i=0, j=0;
+    for(i=0; i<found; i++){
+        for(j=i+1; j<found; j++){
+            if(strlen(substr[j])<strlen(substr[i])){
+                swap(substr[j], substr[i]);
+            }
+        }
+    }
+}
+
 void init(){
     int i, aux, cont=0;
+
+    for(i=0; i<5;i++){
+        variables[i] = 0;
+    }
+
     for(i = 0; i<strlen(str); i++){
        aux = isAtomic(str[i]);
        if(aux){
-          substr[aux][0] = str[i];
-          substr[aux][1] = '\0';
           if(!variables[aux]){
              variables[aux] = 1;
              cont++;
@@ -201,6 +236,7 @@ void init(){
     found = 5;
     findSub(0);
 
+    orderSubs();
     //qtd de ---
     tam = atomics;
     for(i=5; i<found; i++){
@@ -251,21 +287,32 @@ int setvalue(char str[], int linha, int begin, int end){
 }
 
 int main(){
-    int i, j;
-    scanf(" %s", str);
+    int i, j, qtd, cont;
 
-    init();
+    entrada = fopen("EntradaTabela.in", "r");
 
-    for(i=5; i<found; i++){
-        for(j=0; j<pow(2, atomics); j++){
-            value[j][i] = setvalue(substr[i], j, 0, strlen(substr[i]));
+    saida = fopen("saida.txt", "w+");
+    fscanf(entrada, "%d\n", &qtd);
+
+    for(cont=1; cont<=qtd;cont++){
+        mkd.resize(0);
+        found = 0;
+        atomics = 0;
+        tam = 0;
+
+        fprintf(saida, "Tabela #%d\n", cont);
+        fgets(str, 201, entrada);
+        if(cont==2) printf("%d\n", (int)strlen(str));
+        init();
+
+        for(i=5; i<found; i++){
+            for(j=0; j<pow(2, atomics); j++){
+                value[j][i] = setvalue(substr[i], j, 0, strlen(substr[i]));
+            }
         }
+
+        print();
     }
-
-
-
-
-    print();
 
     return 0;
 }
