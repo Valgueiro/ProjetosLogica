@@ -12,7 +12,7 @@ typedef vector <int> vi;
 typedef pair <int, int> ii;
 typedef vector<ii> vii;
 
-int found, atomics, tam;
+int found, atomics, tam, accFound;
 int variables[5], value[16][100];
 vi mkd;
 char str[201];//Guarda a completa
@@ -29,6 +29,12 @@ void swap(char str1[], char str2[]){
     strcpy(str2, aux);
 }
 
+void endit(char str[]){
+    str[0] = 'e';
+    str[1] = 'n';
+    str[2] = 'd';
+    str[3] = '\0';
+}
 int isAtomic(char a){
     if(a == 'x')
         return 1;
@@ -79,6 +85,13 @@ void print(){
     int i, j, espacos[200];
     //Primeira linha com as subexpressões:
     printLinha();
+    printf("substr's:");
+    for(i=1; i<found; i++){
+        if(strcmp(substr[i],"end")!=0){
+            printf("%s\n", substr[i]);
+        }
+    }
+    printf("============\n");
 
     for(i=1; i<found; i++){
         if(i<=4){
@@ -92,9 +105,11 @@ void print(){
             }
             espacos[i]=0;
         }else{
-            fprintf(saida ,"%s|",substr[i]);
-            if(isAtomic(substr[i][0])) espacos[i]=0;
-            else  espacos[i]=strlen(substr[i])-1;
+            if(strcmp(substr[i],"end")!=0){
+                fprintf(saida ,"%s|",substr[i]);
+                if(isAtomic(substr[i][0])) espacos[i]=0;
+                else  espacos[i]=strlen(substr[i])-1;
+            }
         }
 
     }
@@ -114,10 +129,12 @@ void print(){
                  fprintf(saida, "|%d|", value[j][i]);
                  first = false;
             }else{
-                for(int k=0; k<espacos[i]; k++){
-                    fprintf(saida, " ");
+                if(strcmp(substr[i],"end")!=0){
+                    for(int k=0; k<espacos[i]; k++){
+                        fprintf(saida, " ");
+                    }
+                    fprintf(saida, "%d|", value[j][i]);
                 }
-                fprintf(saida, "%d|", value[j][i]);
             }
         }
         fprintf(saida, "\n");
@@ -203,13 +220,34 @@ int findSub(int where){
 
 void orderSubs(){
     int i=0, j=0;
-    for(i=0; i<found; i++){
+    for(i=5; i<found; i++){
         for(j=i+1; j<found; j++){
             if(strlen(substr[j])<strlen(substr[i])){
                 swap(substr[j], substr[i]);
+            }else if(strlen(substr[j])==strlen(substr[i])){
+                for(int k=0; k<strlen(substr[j]); k++){
+                    if(substr[i][k]!=substr[j][k]){
+                        if(substr[i][k]>substr[j][k]){
+                            swap(substr[j], substr[i]);
+                        }
+                        break;
+                    }
+                }
             }
+
         }
     }
+
+    accFound = found;
+    for(i=0; i<found; i++){
+        if(!strcmp(substr[i],substr[i+1])){
+            endit(substr[i]);
+            accFound--;
+        }
+    }
+
+
+
 }
 
 void init(){
@@ -240,9 +278,11 @@ void init(){
     //qtd de ---
     tam = atomics;
     for(i=5; i<found; i++){
-        tam+=strlen(substr[i]);
+        if(strcmp(substr[i],"end")!=0){
+            tam+=strlen(substr[i]);
+        }
     }
-    tam+=found-4+atomics;
+    tam+=accFound-4+atomics;
 }
 //===========================================================================================
 
@@ -301,12 +341,15 @@ int main(){
         tam = 0;
 
         fprintf(saida, "Tabela #%d\n", cont);
+        printf("Tabela #%d\n", cont);
         fgets(str, 201, entrada);
         init();
 
         for(i=5; i<found; i++){
             for(j=0; j<pow(2, atomics); j++){
-                value[j][i] = setvalue(substr[i], j, 0, strlen(substr[i]));
+                if(strcmp(substr[i],"end")!=0){
+                    value[j][i] = setvalue(substr[i], j, 0, strlen(substr[i]));
+                }
             }
         }
 
