@@ -35,6 +35,7 @@ void endit(char str[]){
     str[2] = 'd';
     str[3] = '\0';
 }
+
 int isAtomic(char a){
     if(a == 'x')
         return 1;
@@ -62,9 +63,9 @@ void printClassificacao(){
         fprintf(saida ,"satisfativel e refutavel\n\n");
     }else{
         if(insat){
-            fprintf(saida ,"insatistativel e refutavel\n\n");
+            fprintf(saida ,"insatisfativel e refutavel\n\n");
         }else if(taut){
-            fprintf(saida ,"satistativel e tautologia\n\n");
+            fprintf(saida ,"satisfativel e tautologia\n\n");
         }else{
             fprintf(saida ,"satisfativel e refutavel\n\n");
         }
@@ -85,13 +86,6 @@ void print(){
     int i, j, espacos[200];
     //Primeira linha com as subexpressões:
     printLinha();
-    printf("substr's:");
-    for(i=1; i<found; i++){
-        if(strcmp(substr[i],"end")!=0){
-            printf("%s\n", substr[i]);
-        }
-    }
-    printf("============\n");
 
     for(i=1; i<found; i++){
         if(i<=4){
@@ -341,7 +335,6 @@ int main(){
         tam = 0;
 
         fprintf(saida, "Tabela #%d\n", cont);
-        printf("Tabela #%d\n", cont);
         fgets(str, 201, entrada);
         init();
 
