@@ -1,3 +1,4 @@
-(b+(-b)).(d).(c)
+1
+(-b+d).(-c+-c).(-b+-b+-b).(-c+a+-a).(-a+b+-d+-b+-d).(-c+-a+-d+-b).(-c+-a+-b+-a+-c+-c).(-d+-d+-a+-d+-a)
 
-caso #1: satisfativel
+satisfativel!
