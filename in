@@ -1,4 +1,11 @@
 1
-(-b+d).(-c+-c).(-b+-b+-b).(-c+a+-a).(-a+b+-d+-b+-d).(-c+-a+-d+-b).(-c+-a+-b+-a+-c+-c).(-d+-d+-a+-d+-a)
+(-d+-b+-d+-b).(-b+b+-b+-d+-a).(-d+c+-d+-c).(-d+-d+-c+-d+-d).(-c+-d+-c+-a+-d+-a+-a+-d).(-d+-a+-c+-d+-c+-a+-c+-b).(-d+b+-b+-c+-a+-b+-c).(-c+-b+-a).(-d+c+-a+-b+-d+-a).(a)
 
-satisfativel!
+
+
+
+caso #13:insatisfativel
+caso #15:insatisfativel
+caso #19:insatisfativel
+caso #26:insatisfativel
+caso #28:satisfativel

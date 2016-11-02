@@ -114,7 +114,6 @@ void clear(char str[], int begin){
     int i, qtd=2;
 
     if((begin+2) == strlen(str) && (str[begin-1]=='(' || str[begin-2]=='(')){
-        printf("zera\n");
         str[0] = '\0';
     }else{
         if(str[begin-1]=='+'){
@@ -158,12 +157,10 @@ bool upd(char str[], char op, int key, bool neg){
     return res;
 }
 
-
 void minimize(){
     int i, j, k, f, aux;
     bool fri, neg;
-    printf("before minimize:\n" );
-    printAll();
+
     for(i=0; i<found; i++){
         for(j=0; j<strlen(substr[i]); j++){
             f = isAtomic(substr[i][j]);
@@ -183,16 +180,67 @@ void minimize(){
             }
         }
     }
-
-    printf("after minimize:\n" );
-    printAll();
-    exit(1);
 }
+
+bool counter(){
+    bool first = true;
+    int aux;
+    int ready = 0, l, find, i;
+    for(i=0; i<found; i++){
+        if(strlen(substr[i])==3){
+            if(first){
+                first = false;
+                aux = isAtomic(substr[i][1]);
+                l=i;
+            }else if(aux != isAtomic(substr[i][1])){
+                return false;
+            }
+        }else if(strlen(substr[i])==4){
+            if(first){
+                first = false;
+                aux = isAtomic(substr[i][2]);
+                l=i;
+            }else if(aux != isAtomic(substr[i][2])){
+                return false;
+            }
+        }else if(strlen(substr[i])>0){
+            find++;
+        }
+    }
+
+    if(first || find) return false;
+
+    if(substr[l][1]=='-'){
+        for(int m = 0; m<found; m++){
+            if(l!=m &&  strlen(substr[m])==3){
+                if(substr[m][1] == substr[l][2]){
+                    return true;
+                }
+            }
+        }
+    }else{
+        for(int m = 0; m<found; m++){
+            if(l!=m && strlen(substr[m])==3){
+                if(substr[m][2] == substr[l][1]){
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+
 
 int sat(){
     char aux[4];
     int i, j, f;
     bool find = false;
+    bool neg;
+
+    printf("before:\n");
+    printAll();
+
     for(i=0; i<found; i++){
         if(strlen(substr[i])==3){
             find = true;
@@ -200,6 +248,7 @@ int sat(){
             aux[1] = '\0';
             substr[i][0]='\0';
             f = isAtomic(substr[i][1]);
+            neg = false;
             break;
         }else if(strlen(substr[i])==4){
             find = true;
@@ -208,57 +257,41 @@ int sat(){
             aux[2] = '\0';
             substr[i][0]='\0';
             f = isAtomic(substr[i][2]);
+            neg = true;
             break;
         }
     }
 
     if(!find){
-        //printf("cabou\n");
         return 1;
     }
 
 
-    // printf("atomics: %s\n", aux);
-    //
-    // printf("before:\n");
-    // printAll();
-
     for(i=0; i<found; i++){
         for(j=0; j<strlen(substr[i]); j++){
-            //printf("%c\n", substr[i][j]);
             if(isAtomic(substr[i][j]) == f){
-                if(aux[1]=='\0'){//positivo
-                    if(substr[i][j-1]!='-'){
-                        substr[i][0]='\0';
-                        j=0;
-                    }else{
+                //clear(substr[i], j);
+                if(neg){
+                    if(substr[i][j-1]=='-'){
                         clear(substr[i], j);
                         j=0;
                     }
+
                 }else{
-                    if(substr[i][j-1]=='-'){
-                        substr[i][0]='\0';
-                        j=0;
-                    }else{
+                    if(substr[i][j-1]!='-'){
                         clear(substr[i], j);
                         j=0;
                     }
                 }
-
             }
         }
      }
-    // printf("after:\n");
-    // printAll();
 
-    bool ready = true;
-    for(i=0; i<found; i++){
-        if(strlen(substr[i])>=3){
-            ready = false;
-        }
-    }
+    printf("after:\n");
+    printAll();
 
-    if(ready){
+
+    if(counter()){
         return 0;
     }else{
         return sat();
@@ -295,7 +328,7 @@ int main(){
         }else{
             minimize();
             res = sat();
-
+            printf("=======================\n" );
             //printAll();
             if(res){
                 printf("satisfativel\n");
