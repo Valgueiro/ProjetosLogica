@@ -11,6 +11,8 @@ typedef vector <int> vi;
 typedef pair <int, int> ii;
 typedef vector<ii> vii;
 
+
+bool horn, fnc;
 int found=0;
 char str[1001], substr[750][751];
 vi mkd;
@@ -72,19 +74,37 @@ int findSub(){
 
 //===========================================================================================
 
+void analyzeHorn(){
+
+}
 
 int main(){
     int i;
+
     scanf(" %s", str);
     for(i=0; i<strlen(str); i++){
         mkd.push_back(0);
     }
+    horn = true;
+    fnc = true;
+
     found = 0;
     findSub();
 
-    for(i=0; i<found; i++){
-        printf("%s \n", substr[i]);
+    analyzeHorn();
+
+    if(!horn){
+        printf("nem todas as clausulas sao de horn\n");
+    }else if(!fnc){
+        printf("nao esta na FNC\n");
+    }else{
+        printf("satisfativel ou insatisfativel\n");
     }
+    /*for(i=0; i<found; i++){
+        printf("%s \n", substr[i]);
+    }*/
+
+
 
     return 0;
 }
