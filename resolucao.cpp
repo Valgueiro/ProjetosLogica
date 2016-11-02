@@ -110,41 +110,60 @@ void analyze(){
     }
 }
 
-void clear(char str[], int begin, int qtd){
-    int i;
-    if(str[begin-1]=='+'){
-        begin--;
-    }else{
-        qtd++;
-    }
-    for(i=begin; i+qtd<strlen(str); i++){
-        str[i] = str[i+qtd];
-    }
-    str[i] = '\0';
+void clear(char str[], int begin){
+    int i, qtd=2;
 
+    if((begin+2) == strlen(str) && (str[begin-1]=='(' || str[begin-2]=='(')){
+        printf("zera\n");
+        str[0] = '\0';
+    }else{
+        if(str[begin-1]=='+'){
+            begin--;
+        }else if(str[begin-1]=='-'){
+            qtd++;
+            begin--;
+            if(str[begin-1] == '+'){
+                begin--;
+            }
+        }
+
+        for(i=begin; i+qtd<=strlen(str); i++){
+            str[i] = str[i+qtd];
+        }
+        str[i] = '\0';
+    }
 }
 
 bool upd(char str[], char op, int key, bool neg){
     int tam = strlen(str), k;
     bool res = false;
+
     for(k=0; k<tam; k++){
         if(str[k]==op && k!=key){
+
             if(str[k-1] == '-'){
-                clear(str, k-1, 2);
-                if(!neg) res = true;
+                if(!neg){
+                    res = true;
+                }
             }else{
-                clear(str, k, 1);
+                if(neg){
+                    res = true;
+                }
             }
+            clear(str, k);
             tam = strlen(str);
             k=0;
         }
     }
+    return res;
 }
 
 
 void minimize(){
     int i, j, k, f, aux;
     bool fri, neg;
+    printf("before minimize:\n" );
+    printAll();
     for(i=0; i<found; i++){
         for(j=0; j<strlen(substr[i]); j++){
             f = isAtomic(substr[i][j]);
@@ -159,11 +178,7 @@ void minimize(){
                 fri = upd(substr[i], substr[i][j], j, neg);
 
                 if(fri){
-                    if(neg){
-                        clear(substr[i], j-1, 2);
-                    }else{
-                        clear(substr[i], j, 1);
-                    }
+                    clear(substr[i], j);
                 }
             }
         }
@@ -217,7 +232,7 @@ int sat(){
                         substr[i][0]='\0';
                         j=0;
                     }else{
-                        clear(substr[i], j-2, j);
+                        clear(substr[i], j);
                         j=0;
                     }
                 }else{
@@ -225,7 +240,7 @@ int sat(){
                         substr[i][0]='\0';
                         j=0;
                     }else{
-                        clear(substr[i], j-2, j);
+                        clear(substr[i], j);
                         j=0;
                     }
                 }
