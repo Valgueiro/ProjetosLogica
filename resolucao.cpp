@@ -175,7 +175,7 @@ void minimize(){
                 fri = upd(substr[i], substr[i][j], j, neg);
 
                 if(fri){
-                    clear(substr[i], j);
+                    substr[i][0] = '\0';
                 }
             }
         }
@@ -192,23 +192,23 @@ bool counter(){
                 first = false;
                 aux = isAtomic(substr[i][1]);
                 l=i;
-            }else if(aux != isAtomic(substr[i][1])){
-                return false;
-            }
+            }else if(aux == isAtomic(substr[i][1])){
+                find++;
+                break;
+            }            
         }else if(strlen(substr[i])==4){
             if(first){
                 first = false;
                 aux = isAtomic(substr[i][2]);
                 l=i;
-            }else if(aux != isAtomic(substr[i][2])){
-                return false;
-            }
-        }else if(strlen(substr[i])>0){
-            find++;
+            }else if(aux == isAtomic(substr[i][2])){
+                find++;
+                break;
+            }   
         }
     }
 
-    if(first || find) return false;
+    if(first) return false;
 
     if(substr[l][1]=='-'){
         for(int m = 0; m<found; m++){
@@ -236,8 +236,6 @@ int sat(){
     char aux[4];
     int i, j, f;
     bool find = false;
-    bool neg;
-
     printf("before:\n");
     printAll();
 
@@ -248,16 +246,6 @@ int sat(){
             aux[1] = '\0';
             substr[i][0]='\0';
             f = isAtomic(substr[i][1]);
-            neg = false;
-            break;
-        }else if(strlen(substr[i])==4){
-            find = true;
-            aux[0] = substr[i][1];
-            aux[1] = substr[i][2];
-            aux[2] = '\0';
-            substr[i][0]='\0';
-            f = isAtomic(substr[i][2]);
-            neg = true;
             break;
         }
     }
@@ -270,18 +258,9 @@ int sat(){
     for(i=0; i<found; i++){
         for(j=0; j<strlen(substr[i]); j++){
             if(isAtomic(substr[i][j]) == f){
-                //clear(substr[i], j);
-                if(neg){
-                    if(substr[i][j-1]=='-'){
-                        clear(substr[i], j);
-                        j=0;
-                    }
-
-                }else{
-                    if(substr[i][j-1]!='-'){
-                        clear(substr[i], j);
-                        j=0;
-                    }
+                if(substr[i][j-1]=='-'){
+                    clear(substr[i], j);
+                    j=0;
                 }
             }
         }
