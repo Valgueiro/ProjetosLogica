@@ -7,16 +7,17 @@
 
 using namespace std;
 
-typedef vector <int> vi;
-typedef pair <int, int> ii;
-typedef vector<ii> vii;
-
-
+//================================Variaveis Globais================================//
 bool horn, fnc;
 int found=0;
 char str[1001], substr[750][751];
-vi mkd;
-//=====================================Funções úteis=========================================
+vector<int> mkd;
+
+FILE* in = fopen("Expressoes.in", "r");
+FILE* out = fopen("Expressoes.out", "w");
+//=================================================================================//
+
+//==================================Funções úteis==================================//
 void swap(char str1[], char str2[]){
     char aux[201];
     strcpy(aux, str1);
@@ -25,26 +26,15 @@ void swap(char str1[], char str2[]){
 }
 
 int isAtomic(char a){
-    if(a == 'a')
-        return 1;
-    if(a == 'b')
-        return 2;
-    if(a == 'c')
-        return 3;
-    if(a == 'd')
-        return 4;
+    if(a == 'a') return 1;
+    if(a == 'b') return 2;
+    if(a == 'c') return 3;
+    if(a == 'd') return 4;
     return 0;
 }
+//=================================================================================//
 
-
-void printAll(){
-    int i, j;
-    for(i=0; i<found; i++){
-        printf("%s.", substr[i]);
-    }
-    printf("\n");
-}
-//====================================inicialização==========================================
+//===========================Encontrar as SubExpressões============================//
 void pass(int begin, int end){
     int i, j;
     for(i = begin, j=0; i<=end; i++, j++){
@@ -77,15 +67,15 @@ int findSub(){
         mkd[j] = 1;
         pass(j, i-1);
     }
-
 }
-//===========================================================================================
+//=================================================================================//
 
+//==============================Analisar(FNC e Horn)===============================//
 void analyze(){
     int i, j;
     for(i=0; i<found; i++){
-        for(j=1; j <strlen(substr[i]); j++){
-            if(substr[i][j]=='('){
+        for(j=1; j <strlen(substr[i])-1; j++){
+            if(isAtomic(substr[i][j]) == 0 && (substr[i][j] != '+' && substr[i][j] != '-')){
                 fnc = false;
                 break;
             }
@@ -109,7 +99,9 @@ void analyze(){
         }
     }
 }
+//=================================================================================//
 
+//===============================Encontrando SAT===================================//
 void clear(char str[], int begin){
     int i, qtd=2;
 
@@ -139,7 +131,6 @@ bool upd(char str[], char op, int key, bool neg){
 
     for(k=0; k<tam; k++){
         if(str[k]==op && k!=key){
-
             if(str[k-1] == '-'){
                 if(!neg){
                     res = true;
@@ -182,10 +173,11 @@ void minimize(){
     }
 }
 
-bool counter(){
+bool contradicao(){
     bool first = true;
     int aux;
-    int ready = 0, l, find, i;
+    int ready = 0, l, find=0, i, m;
+    
     for(i=0; i<found; i++){
         if(strlen(substr[i])==3){
             if(first){
@@ -194,8 +186,9 @@ bool counter(){
                 l=i;
             }else if(aux == isAtomic(substr[i][1])){
                 find++;
+                m=i;
                 break;
-            }            
+            }
         }else if(strlen(substr[i])==4){
             if(first){
                 first = false;
@@ -203,41 +196,39 @@ bool counter(){
                 l=i;
             }else if(aux == isAtomic(substr[i][2])){
                 find++;
+                m=i;
                 break;
-            }   
+            }
         }
     }
 
     if(first) return false;
 
-    if(substr[l][1]=='-'){
-        for(int m = 0; m<found; m++){
-            if(l!=m &&  strlen(substr[m])==3){
-                if(substr[m][1] == substr[l][2]){
-                    return true;
-                }
+    if(find==1){
+        if(substr[l][1]=='-'){
+            if(substr[m][1] == substr[l][2]){
+                return true;
             }
-        }
-    }else{
-        for(int m = 0; m<found; m++){
-            if(l!=m && strlen(substr[m])==3){
-                if(substr[m][2] == substr[l][1]){
-                    return true;
-                }
-            }
+      
+            
+        }else{
+            if(substr[m][2] == substr[l][1]){
+                return true;
+            }              
         }
     }
+    
     return false;
 }
-
-
 
 int sat(){
     char aux[4];
     int i, j, f;
     bool find = false;
-    printf("before:\n");
-    printAll();
+    
+    if(contradicao()){
+        return 0;
+    }
 
     for(i=0; i<found; i++){
         if(strlen(substr[i])==3){
@@ -254,7 +245,6 @@ int sat(){
         return 1;
     }
 
-
     for(i=0; i<found; i++){
         for(j=0; j<strlen(substr[i]); j++){
             if(isAtomic(substr[i][j]) == f){
@@ -266,62 +256,59 @@ int sat(){
         }
      }
 
-    printf("after:\n");
-    printAll();
+    return sat();
+}
+//=================================================================================//
 
+//============================Inicialização e Print================================//
+void init(){
+    fscanf(in, " %s", str);
 
-    if(counter()){
-        return 0;
-    }else{
-        return sat();
+    mkd.clear();
+    for(int i=0; i<strlen(str); i++){
+        mkd.push_back(0);
     }
 
+    horn = true;
+    fnc = true;
 
+    found = 0;
+    findSub();
+
+    analyze();
 }
 
+void resultado(int caso){  
+    fprintf(out, "caso #%d: ", caso);
+    
+    if(!horn){
+        fprintf(out, "nem todas as clausulas sao de horn\n");
+    }else if(!fnc){
+        fprintf(out, "nao esta na FNC\n");
+    }else{
+        minimize();
+        bool res = sat();
+        if(res){
+            fprintf(out, "satisfativel\n");
+        }else{
+            fprintf(out, "insatisfativel\n");
+        }
+    }
+}
+//=================================================================================//
 
+//=====================================Main========================================//
 int main(){
     int i, res, caso, aux;
-    scanf("%d", &aux);
+    
+    fscanf(in, "%d", &aux);
+    
     for(caso = 1; caso<=aux; caso++){
-        scanf(" %s", str);
-
-        mkd.clear();
-        for(i=0; i<strlen(str); i++){
-            mkd.push_back(0);
-        }
-
-        horn = true;
-        fnc = true;
-
-        found = 0;
-        findSub();
-
-        analyze();
-
-        printf("caso #%d:", caso);
-        if(!horn){
-            printf("nem todas as clausulas sao de horn\n");
-        }else if(!fnc){
-            printf("nao esta na FNC\n");
-        }else{
-            minimize();
-            res = sat();
-            printf("=======================\n" );
-            //printAll();
-            if(res){
-                printf("satisfativel\n");
-            }else{
-                printf("insatisfativel\n");
-            }
-        }
+        init();
+      
+        resultado(caso);
     }
-
-    /*for(i=0; i<found; i++){
-        printf("%s \n", substr[i]);
-    }*/
-
-
-
+    
     return 0;
 }
+//=================================================================================//
