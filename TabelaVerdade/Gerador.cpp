@@ -8,20 +8,20 @@
 
 using namespace std;
 
-typedef vector <int> vi;
-typedef pair <int, int> ii;
-typedef vector<ii> vii;
-
+//====================================Variaveis Globais=======================================//
 int found, atomics, tam, accFound;
 int variables[5], value[16][100];
-vi mkd;
+
+vector<int> mkd;
+
 char str[201];//Guarda a completa
 char substr[50][201];//Guarda todas as subexpressões
 
-FILE *entrada;
-FILE *saida;
+FILE *entrada = fopen("Expressoes.in", "r");
+FILE *saida = fopen("Expressoes.out", "w");
+//=============================================================================================//
 
-//=====================================Funções úteis=========================================
+//======================================Funções úteis==========================================//
 void swap(char str1[], char str2[]){
     char aux[201];
     strcpy(aux, str1);
@@ -70,7 +70,6 @@ void printClassificacao(){
             fprintf(saida ,"satisfativel e refutavel\n\n");
         }
     }
-
 }
 
 void printLinha(){
@@ -136,11 +135,10 @@ void print(){
     printLinha();
 
     printClassificacao();
-
 }
-//===========================================================================================
+//=============================================================================================//
 
-//==================================Fuções das operações======================================
+//==================================Funções das operações======================================//
 int Fand(int a, int b){
     if(a==0 || b==0) return 0;
     return 1;
@@ -160,9 +158,9 @@ int Fnot(int a){
     if(a==0) return 1;
     return 0;
 }
-//===========================================================================================
+//=============================================================================================//
 
-//====================================inicialização==========================================
+//=======================================Inicialização=========================================//
 void setvariables(){
     int aux = atomics, cont=0, j;
     for(int i=1; i<5; i++){
@@ -188,7 +186,6 @@ void setvariables(){
     substr[3][1] = '\0';
     substr[4][0] = 't';
     substr[4][1] = '\0';
-
 }
 
 void pass(int begin, int end){
@@ -209,7 +206,6 @@ int findSub(int where){
     mkd[i] = 1;
 
     if(where<strlen(str)) findSub(where+1);
-
 }
 
 void orderSubs(){
@@ -239,9 +235,6 @@ void orderSubs(){
             accFound--;
         }
     }
-
-
-
 }
 
 void init(){
@@ -278,8 +271,9 @@ void init(){
     }
     tam+=accFound-4+atomics;
 }
-//===========================================================================================
+//=============================================================================================//
 
+//=======================================Problema SAT==========================================//
 int setvalue(char str[], int linha, int begin, int end){
     int i, aux, aux1, aux2, fim, ini, cont = 0;
     if(begin==end){
@@ -314,18 +308,17 @@ int setvalue(char str[], int linha, int begin, int end){
         }
     }
     aux = isAtomic(str[begin]);
-    if(aux){//or
+
+    if(aux){
         return value[linha][aux];
     }
-
 }
+//=============================================================================================//
 
+//============================================Main=============================================//
 int main(){
     int i, j, qtd, cont;
 
-    entrada = fopen("EntradaTabela.in", "r");
-
-    saida = fopen("saida.txt", "w+");
     fscanf(entrada, "%d\n", &qtd);
 
     for(cont=1; cont<=qtd;cont++){
@@ -351,3 +344,4 @@ int main(){
 
     return 0;
 }
+//=============================================================================================//
